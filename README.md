@@ -14,14 +14,14 @@ The editor is line-based, so it is recommended to save only one record per line.
 sudo apt install python3.6 python3-pip
 ```
 
-1. Use pip to install dependencies:
+2. Use pip to install dependencies:
 
 ```bash
 pip install pyperclip
 pip install pycryptodome
 ```
 
-1. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
+3. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
 ```bash
 sudo apt-get install xclip
 ```
