@@ -17,8 +17,8 @@ sudo apt install python3.6 python3-pip
 2. Use pip to install dependencies:
 
 ```bash
-pip install pyperclip
-pip install pycryptodome
+pip3 install pyperclip
+pip3 install pycryptodome
 ```
 
 3. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
