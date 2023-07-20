@@ -19,6 +19,7 @@ sudo apt install python3.6 python3-pip
 ```bash
 pip3 install pyperclip
 pip3 install pycryptodome
+pip3 install gnureadline
 ```
 
 3. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
@@ -37,17 +38,17 @@ vault.py -h
 
 Import plaintext file to vault:
 ```
-cat <plaintextfile> | vault.py --import <targetfile>
+cat <plaintextfile> | vault.py --import <file>
 ```
 
 Edit encrypted file in interactive mode:
 ```
-vault.py <targetfile>
+vault.py <file>
 Enter master password:
 Enter your command. Use "-h" to get help.
   > 
 ```
-If <targetfile> is missing the default file is used. If the given file does not exist, a new file will be created.
+If the file parameter is missing, the default file is used. If the given file does not exist, a new file will be created.
 
 ### Interactive editor mode to edit the file
 
@@ -56,7 +57,7 @@ Unlike other text editors, the entire content of the file is not output. The sec
 In interactive mode use "-h" to get help:
 ```
   > -h
-  > e -h
+  > <command> -h
 ```
 
 Insert new line at the end:

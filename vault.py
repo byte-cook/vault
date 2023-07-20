@@ -13,18 +13,21 @@ import logging
 import shlex
 import pyperclip
 import threading
+import gnureadline
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Protocol.KDF import scrypt
 from textwrap import dedent
 
-## pip install pycryptodome
-## pip install pyperclip
+## pip3 install pycryptodome
+## pip3 install pyperclip
+## pip3 install gnureadline
 
 # https://nitratine.net/blog/post/python-gcm-encryption-tutorial/
 
 BUFFER_SIZE = 1024 * 1024
 CLIPBOARD_SEC = 45
+timer = None
 
 class LineNumberError(Exception):
     def __init__(self, msg):
@@ -96,9 +99,6 @@ class TextFile:
             line.visible = False
 
     def printVisible(self):
-        #if len(self.lines) == 0:
-        #    return
-        #print('----------------------------------')
         for i, line in enumerate(self.lines):
             if line.isVisible():
                 line.printLine(self.getLinePrefix(i))
@@ -158,7 +158,7 @@ class TextFile:
             plaintext += line.text
         return plaintext
 
-def insert(textFile, lineArg, newLine=False):
+def insert(textFile, lineArg, newLine=False, newLineNumber=1):
     logging.debug('Action INSERT: {}'.format(lineArg))
     if lineArg is None:
         index = textFile.getEndIndex()
@@ -174,14 +174,13 @@ def insert(textFile, lineArg, newLine=False):
             try:
                 line = input(textFile.getLinePrefix(i))
                 if not line:
-                # if line == '\n':
                     break
                 contents += line + '\n'
                 i += 1
             except EOFError:
                 break
     else:
-        contents = '\n'
+        contents = '\n' * newLineNumber
     textFile.insert(index, contents)
 
 def edit(textFile, lineArgs, copy):
@@ -233,8 +232,12 @@ def copy(textFile, lineArgs, autoClearClipboard=True):
     for lineArg in lineArgs:
         fromIndex, toIndex = textFile.transformLineArgToIndexes(lineArg, True, False)
         text += textFile.getText(fromIndex, toIndex)
+    text = text.rstrip('\n')
     pyperclip.copy(text)
     if autoClearClipboard:
+        global timer
+        if timer is not None:
+            timer.cancel()
         timer = threading.Timer(CLIPBOARD_SEC, lambda: pyperclip.copy(''))
         timer.start()
 
@@ -271,6 +274,10 @@ def quit(textFile, force, password, filePath):
         writeFile = getYesOrNo('The file has been changed. Should the changes be saved?', default=None)
         if writeFile:
             write(textFile, password, filePath)
+    global timer
+    if timer is not None:
+        timer.cancel()
+        pyperclip.copy('')
     exit(0)
 
 def write(textFile, password, filePath):
@@ -435,9 +442,9 @@ if __name__ == '__main__':
             subparsers = cmdParser.add_subparsers(dest='command')
             # find
             findParser = subparsers.add_parser('find', aliases=['f'], help='output lines if search text matches')
-            findParser.add_argument('-B', dest='beforeContext', default=0, type=int, help='print NUM lines before context')
-            findParser.add_argument('-A', dest='afterContext', default=5, type=int, help='print NUM lines after context')
-            findParser.add_argument('-C', dest='context', default=0, type=int, help='print NUM lines before and after context')
+            findParser.add_argument('-B', dest='beforeContext', default=0, type=int, help='print NUM lines before context (default: 0)')
+            findParser.add_argument('-A', dest='afterContext', default=5, type=int, help='print NUM lines after context (default: 5)')
+            findParser.add_argument('-C', dest='context', default=0, type=int, help='print NUM lines before and after context (default: 0)')
             findParser.add_argument('text', help='the search text')
             # line
             lineParser = subparsers.add_parser('line', aliases=['l'], help='output lines by number')
@@ -446,6 +453,7 @@ if __name__ == '__main__':
             insertParser = subparsers.add_parser('insert', aliases=['i'], help='insert new text')
             insertParser.add_argument('lineNumber', nargs='?', help='line number to insert, e.g. 7')
             newLineParser = subparsers.add_parser('newline', aliases=['nl'], help='insert new empty line')
+            newLineParser.add_argument('-n', dest='number', default=1, type=int, help='number of new lines to insert (default: 1)')
             newLineParser.add_argument('lineNumber', nargs='?', help='line number to insert, e.g. 7')
             editParser = subparsers.add_parser('edit', aliases=['e'], help='edit lines')
             editParser.add_argument('-c', dest='copy', default=False, action='store_true', help='copy each line to clipboard to simplify editing of particular characters')
@@ -497,7 +505,7 @@ if __name__ == '__main__':
                     elif cmd.command in ['insert', 'i']:
                         insert(textFile, cmd.lineNumber if cmd.lineNumber else None)
                     elif cmd.command in ['newline', 'nl']:
-                        insert(textFile, cmd.lineNumber if cmd.lineNumber else None, True)
+                        insert(textFile, cmd.lineNumber if cmd.lineNumber else None, True, cmd.number)
                     elif cmd.command in ['find', 'f']:
                         beforeContext = cmd.beforeContext
                         afterContext = cmd.afterContext
