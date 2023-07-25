@@ -15,15 +15,20 @@ sudo apt install python3.6 python3-pip
 ```
 
 2. Use pip to install dependencies:
-
-```bash
+```
 pip3 install pyperclip
 pip3 install pycryptodome
 pip3 install gnureadline
 ```
 
-3. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
-```bash
+3. Downlaod Vault.py and set execute permissions:
+```
+curl -LJO https://github.com/byte-cook/vault/blob/main/vault.py
+chmod +x vault.py 
+```
+
+4. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
+```
 sudo apt-get install xclip
 ```
 See: https://pyperclip.readthedocs.io/en/latest/

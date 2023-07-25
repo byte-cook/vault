@@ -75,7 +75,7 @@ class TextFile:
         i = 2
         for i, line in enumerate(self.lines):
             lineText = line.getPrintableText()
-            if searchText in lineText:
+            if searchText.lower() in lineText.lower():
                 line.visible = True
                 beforeIndexes = range(i-beforeContext, i)
                 foundIndexes.extend(beforeIndexes)
