@@ -23,7 +23,7 @@ pip3 install gnureadline
 
 3. Downlaod Vault.py and set execute permissions:
 ```
-curl -LJO https://github.com/byte-cook/vault/blob/main/vault.py
+curl -LJO https://raw.githubusercontent.com/byte-cook/vault/main/vault.py
 chmod +x vault.py 
 ```
 
