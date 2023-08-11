@@ -1,6 +1,6 @@
 # Vault.py
 
-Vault.py is an application to store secret data like passwords transparently in an encrypted file. It uses salted AES encryption in GCM mode to protect the data. Vault.py can therefore be used as a command line password manager.
+Vault.py is an application to store secret data like passwords transparently in an encrypted file. It uses salted AES encryption in GCM mode to protect the data. Vault.py can therefore be used as a command line password manager. If you are interested in a password manager that keeps your data local and doesn't share it with a cloud, give this one a try.
 
 The application intentionally does not offer any options about the encryption used. Strong encryption is used by default. However, the user should take care to choose a strong password. 
 
