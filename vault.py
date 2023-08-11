@@ -25,6 +25,15 @@ from textwrap import dedent
 
 # https://nitratine.net/blog/post/python-gcm-encryption-tutorial/
 
+# https://www.codequoi.com/en/coloring-terminal-text-tput-and-ansi-escape-sequences/
+ANSI_END = '\033[0m'
+ANSI_HEADING_1 = '\033[36m\033[1m'
+ANSI_HEADING_2 = '\033[1m'
+ANSI_HEADING_3 = '\033[3m'
+ANSI_LINENO = '\033[7m'
+if os.name == 'nt':
+    os.system("")
+
 BUFFER_SIZE = 1024 * 1024
 CLIPBOARD_SEC = 45
 timer = None
@@ -41,11 +50,22 @@ class TextFileLine:
     def getPrintableText(self):
         return self.text.rstrip('\n')
         
+    def getFormattedText(self):
+        text = self.getPrintableText()
+        if text.startswith('### '):
+            return f'{ANSI_HEADING_3}{text}{ANSI_END}'
+        elif text.startswith('## '):
+            return f'{ANSI_HEADING_2}{text}{ANSI_END}'
+        elif text.startswith('# '):
+            return f'{ANSI_HEADING_1}{text}{ANSI_END}'
+        else:
+            return f'{text}'
+
     def isVisible(self):
         return self.visible
         
     def printLine(self, prefix):
-        print('{}{}'.format(prefix, self.getPrintableText()))
+        print('{}{}'.format(prefix, self.getFormattedText()))
 
 class TextFile:
     def __init__(self, plaintext):
@@ -104,13 +124,13 @@ class TextFile:
                 line.printLine(self.getLinePrefix(i))
 
     def getLinePrefix(self, index):
-        return '{:3d} | '.format(index+1)
+        return f'{ANSI_LINENO}{index+1:3d}{ANSI_END} '
                 
     def getText(self, fromIndex, toIndex):
         text = ''
         indexes = sorted(range(fromIndex, toIndex+1), reverse=False)
         for i in indexes:
-            text += (textFile.lines[i].text)
+            text += (self.lines[i].text)
         return text
     
     def getEndIndex(self):
@@ -159,7 +179,7 @@ class TextFile:
         return plaintext
 
 def insert(textFile, lineArg, newLine=False, newLineNumber=1):
-    logging.debug('Action INSERT: {}'.format(lineArg))
+    logging.debug(f'Action {"NEWLINE" if newLine else "INSERT"}: {lineArg}')
     if lineArg is None:
         index = textFile.getEndIndex()
     else:
@@ -385,7 +405,7 @@ def getYesOrNo(question, default=True):
         else:
             print('Please respond with "yes" or "no" (or "y" or "n").')
 
-if __name__ == '__main__':
+def main(argv=None):
     try:
         PROG_DESC = """\
             Vault is an application to store secret data like passwords transparently in an encrypted file. It uses salted AES encryption in GCM mode to protect the data.
@@ -400,7 +420,7 @@ if __name__ == '__main__':
         parser.add_argument("--export", dest='exportStdout', help="export the secret file in plaintext to stdout", action="store_true")
         parser.add_argument('file', nargs='?', help='the secret file', default=os.path.expanduser('~/my.vault'))
 
-        args = parser.parse_args()
+        args = parser.parse_args(argv)
         
         level = logging.DEBUG if args.debug else logging.WARNING
         logging.basicConfig(format='%(levelname)s: %(message)s', level=level, force=True)
@@ -458,7 +478,7 @@ if __name__ == '__main__':
             editParser = subparsers.add_parser('edit', aliases=['e'], help='edit lines')
             editParser.add_argument('-c', dest='copy', default=False, action='store_true', help='copy each line to clipboard to simplify editing of particular characters')
             editParser.add_argument('lineNumbers', nargs='+', help='line number or range, e.g. 1-7')
-            deleteParser = subparsers.add_parser('del', aliases=['d'], help='delete lines')
+            deleteParser = subparsers.add_parser('delete', aliases=['d', 'del'], help='delete lines')
             deleteParser.add_argument('lineNumbers', nargs='*', help='line number or range, e.g. 1-7')
             # read/write
             readParser = subparsers.add_parser('read', aliases=['r'], help='reads the vault file, unsaved changes are lost')
@@ -520,7 +540,7 @@ if __name__ == '__main__':
                         write(textFile, password, vaultFile)
                     elif cmd.command in ['read', 'r']:
                         textFile = read(textFile, password, vaultFile, cmd.force)
-                    elif cmd.command in ['del', 'd']:
+                    elif cmd.command in ['delete', 'del', 'd']:
                         delete(textFile, cmd.lineNumbers if cmd.lineNumbers else None)
                     elif cmd.command in ['copy', 'c']:
                         copy(textFile, cmd.lineNumbers)
@@ -539,3 +559,6 @@ if __name__ == '__main__':
         if args.debug:
             traceback.print_exc()
     
+if __name__ == '__main__':
+    main()
+
