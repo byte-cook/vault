@@ -145,6 +145,18 @@ class TestVault(unittest.TestCase):
         self.assertEqual(cm.exception.code, 0)
         self.check_content('line 1\nline 2', password='new-pwd')
 
+    @mock.patch('vault.input', create=True)
+    @mock.patch('getpass.getpass', create=True)
+    def test_copy_paste(self, mocked_getpass, mocked_input):
+        print('======= test_copy_paste ===')
+        mocked_getpass.side_effect = ['pwd', 'pwd']
+        mocked_input.side_effect = ['i', 'line 1', '', 'l', 'c 1', 'v 2', 'l', 'wq']
+        
+        with self.assertRaises(SystemExit) as cm:
+            vault.main(['--debug', TEST_FILE])
+        self.assertEqual(cm.exception.code, 0)
+        self.check_content('line 1\nline 1')
+
     def test_clean(self):
         print('======= test_clean ===')
         shutil.rmtree(ROOT_DIR)
