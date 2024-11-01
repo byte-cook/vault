@@ -27,9 +27,14 @@ curl -LJO https://raw.githubusercontent.com/byte-cook/vault/main/vault.py
 chmod +x vault.py 
 ```
 
-4. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
+4. (Optional) Use opt.py to install it to the /opt directory:
 ```
-sudo apt-get install xclip
+sudo opt.py install vault vault.py 
+```
+
+5. If copy/paste does not work on your system, try to install one of the copy/paste mechansims, e.g.:
+```
+sudo apt install xclip
 ```
 See: https://pyperclip.readthedocs.io/en/latest/
 
